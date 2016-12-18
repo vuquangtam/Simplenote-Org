@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <title>Simplenote</title>
+        <!-- bower:js -->
+        <script src="bower_components/jquery/dist/jquery.js"></script>
+        <script src="bower_components/metro/build/js/metro.js"></script>
+        <script src="bower_components/metro-dist/js/metro.min.js"></script>
+        <script src="bower_components/angular/angular.js"></script>
+        <script src="bower_components/angular-resource/angular-resource.js"></script>
+        <script src="bower_components/split-pane/split-pane.js"></script>
+        <script src="bower_components/angular-split-pane/angular-split-pane.js"></script>
+        <!-- endbower -->
+        <!-- bower:css -->
+        <link rel="stylesheet" href="bower_components/metro/build/css/metro.css" />
+        <link rel="stylesheet" href="bower_components/metro/build/css/metro-icons.css" />
+        <link rel="stylesheet" href="bower_components/metro/build/css/metro-rtl.css" />
+        <link rel="stylesheet" href="bower_components/metro/build/css/metro-responsive.css" />
+        <link rel="stylesheet" href="bower_components/metro/build/css/metro-schemes.css" />
+        <link rel="stylesheet" href="bower_components/metro-dist/css/metro.min.css" />
+        <link rel="stylesheet" href="bower_components/metro-dist/css/metro-icons.min.css" />
+        <link rel="stylesheet" href="bower_components/metro-dist/css/metro-rtl.min.css" />
+        <link rel="stylesheet" href="bower_components/metro-dist/css/metro-responsive.min.css" />
+        <link rel="stylesheet" href="bower_components/metro-dist/css/metro-schemes.min.css" />
+        <link rel="stylesheet" href="bower_components/split-pane/split-pane.css" />
+        <!-- endbower -->
+        <style>
+         body {
+             height: 100%;
+             overflow: hidden;
+             width: 100%;
+         }
+         .window {
+             height: 100%;
+         }
+         .section-number {
+             display: none;
+         }
+         .task-status {
+             margin-right: 5px;
+             font-weight: bold;
+         }
+         .todo {
+             color: red;
+         }
+         .done {
+             color: green;
+         }
+        </style>
+    </head>
+
+    <body ng-app="Simplenote" ng-controller="SimplenoteController">
+        <div class="window">
+            <div class="flex-grid" style="height: 100%;">
+                <div class="row" style="height: 100%">
+                    <div class="cell size-x200" id="cell-sidebar" style="background-color: #71b1d1; height: 100%; overflow: hidden">
+                        <div class="input-control text padding5" style="width: 100%">
+                            <input type="text" placeholder="Search..." ng-change="search()" ng-model="searchInput">
+                        </div>
+                        <div style="height: 90%;overflow-y: auto;">
+                            <ul class="sidebar padding5" >
+                                <li ng-repeat="note in notes" ng-click="selectNote($index)">
+                                    <a href="#" style="padding: 0px"><span>{{note.title}}</span></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="cell auto-size padding10 bg-white" >
+                        <div data-split-pane>
+                            <div data-split-pane-component data-width="20em">
+                                <textarea style="box-sizing: border-box; height: 100%; width: 100%; border: none" ng-model="content" ng-change="changeNote()"></textarea>
+                            </div>
+                            <div data-split-pane-divider data-width="5px"></div>
+                            <div data-split-pane-component ng-bind-html="orgRender | trust"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+             /* var app = angular.module("Simplenote", ["ngResource"]).factory('noteResource', function($resource) {
+              *     return $resource('http://localhost:8080/api/getNote/:key', {key: "@key"}); // Note the full endpoint address
+              * });*/
+             var app = angular.module("Simplenote", ['shagstrom.angular-split-pane'])
+
+             app.factory('noteResource', function($http) {
+                 return {
+                     getAllNotes: function(){
+                         return $http.get("http://localhost:8080/api/getNotesWithContent")
+                     }
+                 }
+             })
+             
+             app.filter("trust", ['$sce', function($sce) {
+                 return function(htmlCode){
+                     return $sce.trustAsHtml(htmlCode);
+                 }
+             }]);
+             
+             app.controller("SimplenoteController", function($scope, noteResource){
+                 $scope.orgRender = "";
+                 $scope.content = "";
+                 $scope.searchInput = "";
+                 $scope.currentIndex = -1;
+                 $scope.rootNotes = [];
+                 $scope.notes = [];
+                 noteResource.getAllNotes().then(function(response) {
+                     $scope.rootNotes = response.data;
+                     $scope.notes = $scope.rootNotes;
+                 });
+
+                 $scope.selectNote = function(index){
+                     $scope.content = $scope.notes[index].content;
+                     $scope.orgRender = $scope.notes[index].orgRender;
+                     /* $http.post("http://localhost:8080/api/org2html", {'orgCode': $scope.content}).then(function(response){
+                      *     $scope.orgRender = $sce.trustAsHtml(response);
+                      * });*/
+                 };
+
+                 $scope.changeNote = function(){
+                     $scope.notes[$scope.currentIndex].content = $scope.content
+                 };
+
+                 $scope.search = function(){
+                     $scope.notes = [];
+                     $scope.rootNotes.forEach(function(note){
+                         if(note.content.toLowerCase().indexOf($scope.searchInput.toLowerCase()) != -1){
+                             $scope.notes.push(note);
+                         }
+                     });
+                 };
+             })
+            </script>
+    </body>
+</html>

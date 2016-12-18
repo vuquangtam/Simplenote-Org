@@ -1,0 +1,24 @@
+{
+  "name": "iframe",
+  "description": "",
+  "main": "index.html",
+  "authors": [
+    "Tam Vu Quang <vuquangtam1994@gmail.com>"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/vuquangtam/Test",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "metro": "^3.0.15",
+    "metro-dist": "^3.0.15",
+    "angular": "angularjs#^1.5.9",
+    "angular-resource": "^1.6.0",
+    "angular-split-pane": "^1.3.1"
+  }
+}
